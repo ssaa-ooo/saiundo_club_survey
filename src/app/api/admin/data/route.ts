@@ -11,9 +11,10 @@ export async function GET() {
     );
 
     const sheets = google.sheets({ version: 'v4', auth });
-    const spreadsheetId = process.env.SPREADSHEET_ID;
+    
+    // ここを既存の環境変数名「GOOGLE_SHEET_ID」に合わせました
+    const spreadsheetId = process.env.GOOGLE_SHEET_ID;
 
-    // summaryシートとresponsesシートを同時取得
     const response = await sheets.spreadsheets.values.batchGet({
       spreadsheetId,
       ranges: ['summary!A2:E20', 'responses!A2:G100'],
