@@ -1,3 +1,5 @@
+import "./globals.css"; // この一行を一番上に追加
+
 import type { Metadata } from "next";
 import "./globals.css";
 
