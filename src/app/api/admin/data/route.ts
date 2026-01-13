@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    // 1. 環境変数の存在チェック
     const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
     const key = process.env.GOOGLE_PRIVATE_KEY;
     const sheetId = process.env.GOOGLE_SHEET_ID;
@@ -12,17 +11,23 @@ export async function GET() {
       throw new Error('Environment variables are missing');
     }
 
-    // 2. 認証設定（改行コードの処理をより確実に）
+    // 「奥の手」：鍵の改行コードをあらゆるパターンに対応させる補正処理
+    const formattedKey = key
+      .replace(/\\n/g, '\n')     // 文字列としての \n を実際の改行に変換
+      .replace(/"/g, '')         // 万が一混入した引用符を削除
+      .replace(/\s/g, (match) => // BEGIN/END以外の余計な空白を調整（オプション）
+        match === '\n' ? '\n' : match 
+      );
+
     const auth = new google.auth.JWT(
       email,
       undefined,
-      key.replace(/\\n/g, '\n'),
+      formattedKey,
       ['https://www.googleapis.com/auth/spreadsheets.readonly']
     );
 
     const sheets = google.sheets({ version: 'v4', auth });
 
-    // 3. データ取得（summaryシートとresponsesシート）
     const response = await sheets.spreadsheets.values.batchGet({
       spreadsheetId: sheetId,
       ranges: ['summary!A2:E20', 'responses!A2:G100'],
@@ -35,7 +40,6 @@ export async function GET() {
 
   } catch (error: any) {
     console.error('Fetch error:', error.message);
-    // エラー詳細を少しだけ出すようにして原因を特定しやすくします
     return NextResponse.json({ 
       error: 'データの取得に失敗しました',
       detail: error.message 
