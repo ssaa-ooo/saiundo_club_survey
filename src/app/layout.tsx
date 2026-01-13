@@ -1,7 +1,4 @@
-import "./globals.css"; // この一行を一番上に追加
-
 import type { Metadata } from "next";
-import "./globals.css";
 
 export const metadata: Metadata = {
   title: "彩雲堂倶楽部アンケート",
@@ -15,7 +12,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body>{children}</body>
+      <head>
+        <script src="https://cdn.tailwindcss.com"></script>
+      </head>
+      <body style={{ backgroundColor: '#f8fafc', fontFamily: 'sans-serif' }}>
+        {children}
+      </body>
     </html>
   );
 }
