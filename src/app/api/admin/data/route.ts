@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const auth = new google.auth.JWT(
       process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      null,
+      undefined,
       (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
       ['https://www.googleapis.com/auth/spreadsheets.readonly']
     );
@@ -13,21 +13,18 @@ export async function GET() {
     const sheets = google.sheets({ version: 'v4', auth });
     const spreadsheetId = process.env.SPREADSHEET_ID;
 
-    // summaryシートとresponsesシートの両方からデータを取得
+    // summaryシートとresponsesシートを同時取得
     const response = await sheets.spreadsheets.values.batchGet({
       spreadsheetId,
       ranges: ['summary!A2:E20', 'responses!A2:G100'],
     });
 
-    const summaryData = response.data.valueRanges?.[0].values || [];
-    const responsesData = response.data.valueRanges?.[1].values || [];
-
     return NextResponse.json({
-      summary: summaryData,
-      responses: responsesData,
+      summary: response.data.valueRanges?.[0].values || [],
+      responses: response.data.valueRanges?.[1].values || [],
     });
   } catch (error) {
     console.error('Fetch error:', error);
-    return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
+    return NextResponse.json({ error: 'データの取得に失敗しました' }, { status: 500 });
   }
 }
